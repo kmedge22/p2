@@ -1,0 +1,152 @@
+package P2;
+import P1.ExceptionHandled;
+import P1.Matrix;
+
+public class Eigenvector {
+    Matrix A;
+    Matrix e;
+    double[] eigenvalues;
+    Matrix I;
+
+    public Eigenvector(Matrix a) {
+        this.A = a;
+    }
+
+    public double[] Leverriers(Matrix A) {
+        Matrix B = new Matrix(A.getData());
+        double a = -this.trace(B);
+        Matrix temp = new Matrix(A.getData());
+        double[] out = new double[A.getRows()];
+        out[A.getRows() - 1] = a;
+        System.out.print("x^" + A.getRows() + " " + a + "X^" + (A.getRows() - 1) + " ");
+
+        int i;
+        for(int k = B.getRows() - 1; k >= 1; --k) {
+            Matrix I = temp.createSquareIdentity(B.getRows());
+
+            for(i = 0; i < B.getRows(); ++i) {
+                double[] var10000 = I.getData()[i];
+                var10000[i] *= a;
+            }
+
+            B = A.mult(B.add(I));
+            a = -(this.trace(B) / (double)(A.getRows() - k + 1));
+            out[k - 1] = a;
+            System.out.print(" + " + a + "X^" + (k - 1) + " ");
+        }
+
+        System.out.println();
+        double[] var12 = out;
+        int var13 = out.length;
+
+        for(i = 0; i < var13; ++i) {
+            double num = var12[i];
+            System.out.println("num: " + num);
+        }
+
+        return out;
+    }
+
+    public double trace(Matrix matrix) {
+        double sum = 0.0D;
+
+        for(int i = 0; i < matrix.getRows(); ++i) {
+            for(int j = 0; j < matrix.getColumns(); ++j) {
+                if(i == j) {
+                    sum += matrix.getData()[i][j];
+                }
+            }
+        }
+
+        return sum;
+    }
+
+    public Double powerMethod(Matrix matrix) throws ExceptionHandled {
+        Matrix A = new Matrix(matrix.getData());
+        double epsilon = 1.0E-8D;
+        short m = 200;
+        int k = 0;
+        double mew = 0.0D;
+        double[][] arbitraryVector = new double[A.getRows()][A.getColumns()];
+
+        for(int y = 0; y < A.getRows(); ++y) {
+            arbitraryVector[y][0] = 1.0D;
+        }
+
+        Matrix var18 = new Matrix(arbitraryVector);
+        Matrix x = A.mult(var18);
+
+        double normR;
+        do {
+            double normX = this.findNorm(x.getData());
+            var18 = x.divide(normX);
+            System.out.println("yesss" + var18.toString());
+            Matrix temp = new Matrix(var18.getData());
+            x = A.mult(var18);
+            mew = var18.transpose().mult(x).getData()[0][0] / var18.transpose().mult(var18).getData()[0][0];
+            Matrix r = new Matrix(var18.mult(mew).subtract(x.getData()));
+            normR = this.findNorm(r.getData());
+            ++k;
+            if(mew == 0.5918080766681314D) {
+                System.out.println("FINALLLLLLLLLLLLLLY");
+                System.out.println(temp.toString());
+            }
+        } while(normR > epsilon && k < m);
+
+        System.out.println("Mew: " + mew);
+        return Double.valueOf(mew);
+    }
+
+    private double findNorm(double[][] A) {
+        int length = A.length;
+        int width = A[0].length;
+
+        for(int max = 0; max < length; ++max) {
+            for(int j = 0; j < width; ++j) {
+                A[max][j] = Math.abs(A[max][j]);
+            }
+        }
+
+        double var10 = 0.0D;
+
+        for(int i = 0; i < length; ++i) {
+            double sum = 0.0D;
+
+            for(int j1 = 0; j1 < width; ++j1) {
+                sum += A[i][j1];
+            }
+
+            if(sum > var10) {
+                var10 = sum;
+            }
+        }
+
+        return var10;
+    }
+
+    public Matrix getCompanionMatrix(double[] coefficientArray) {
+        double[][] m = new double[coefficientArray.length][coefficientArray.length];
+        m[0] = coefficientArray;
+        boolean k = false;
+
+        int out;
+        for(out = 1; out < m.length; ++out) {
+            for(int j = 0; j < m.length; ++j) {
+                if(out == j + 1) {
+                    m[out][j] = 1.0D;
+                } else {
+                    m[out][j] = 0.0D;
+                }
+            }
+        }
+
+        for(out = 0; out < m.length; ++out) {
+            m[0][out] *= -1.0D;
+        }
+
+        System.out.println("\n Companion Matrix: ");
+        Matrix var6 = new Matrix(m);
+        System.out.println(var6.toString());
+        return var6;
+    }
+}
