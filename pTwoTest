@@ -1,0 +1,35 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by Fernflower decompiler)
+//
+
+import P1.ExceptionHandled;
+import P1.Matrix;
+import P2.Eigenvector;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class pTwoTest {
+    public pTwoTest() {
+    }
+
+    @Test
+    public void testEigenvaluesForCovariance() throws ExceptionHandled {
+        double[][] cov = new double[][]{{0.591808076158509D, 0.2874253216970152D}, {0.2874253216970152D, 0.18987357662379903D}};
+        Matrix covariance = new Matrix(cov);
+        double actual = (new Eigenvector(covariance)).powerMethod(covariance).doubleValue();
+        double expected = 0.7415560257077607D;
+        double precision = 1.0E-4D;
+        Assert.assertEquals(expected, actual, precision);
+    }
+
+    @Test
+    public void testEigenvaluesForExample1() throws ExceptionHandled {
+        double[][] temp = new double[][]{{6.0D, -1.0D}, {2.0D, 3.0D}};
+        Matrix m1 = new Matrix(temp);
+        double actual = (new Eigenvector(m1)).powerMethod(m1).doubleValue();
+        double expected = 5.0D;
+        double precision = 1.0E-4D;
+        Assert.assertEquals(expected, actual, precision);
+    }
+}
