@@ -1,0 +1,52 @@
+package P2;
+
+/**
+ * Created by kelseyedge on 3/6/18.
+ */
+public class Controller {
+    public static void main(String[] args) {
+
+        tspController t = new tspController();
+//        Matrix d = new Matrix(t.getDistanceDouble());
+//        System.out.println(d.toString());
+
+
+        long startE = System.currentTimeMillis();
+        //Exhaustive Search
+        PermutationTester p = new PermutationTester();
+        int[] temp = p.getPermutations();
+        long endE = System.currentTimeMillis();
+        System.out.println(p.getMax());
+        System.out.println(p.getMin());
+        System.out.println("Max permutations: "+ p.getMaxPermList());
+        System.out.println("Min permutations: "+ p.getMinPermList());
+        System.out.println(p.getMean());
+        System.out.println(p.getSum());
+        System.out.println(p.getStandardDeviation());
+        System.out.println(p.getVariance());
+        System.out.println(p.getCount());
+
+
+
+        //Random Search
+        long startR = System.currentTimeMillis();
+        RandomSearch r = new RandomSearch(t);
+        long endR = System.currentTimeMillis();
+        System.out.println("Random Time Elapsed: " + (endR - startR));
+
+
+
+        //Genetic Algorithm Search
+        long startG = System.currentTimeMillis();
+        GeneticAlgorithm g = new GeneticAlgorithm(t);
+        long endG = System.currentTimeMillis();
+
+
+
+        //Simulated Annealing Algorithm Search
+        long startSA = System.currentTimeMillis();
+        SimulatedAnnealing s = new SimulatedAnnealing(t);
+        long endSA = System.currentTimeMillis();
+
+    }
+}
