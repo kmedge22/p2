@@ -1,0 +1,247 @@
+package P2;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+/**
+ * Created by kelseyedge on 2/12/18.
+ */
+public class SimulatedAnnealing {
+    double mean;
+    double standardDeviation;
+    double max= 0;
+    double min= 14;
+    double sum = 0;
+    int count = 0;
+    double variance;
+    tspController t;
+    ArrayList<TSP> tspData;
+    double[][] distance;
+    int[]permList = {0,1,2,3,4,5,6,7,8,9,10,11,12,13};
+    int[]minPermList;
+    int[]maxPermList;
+    ArrayList<int[]> journeyList = new ArrayList();
+    int tracker = 0;
+    Tally tally;
+
+
+    public SimulatedAnnealing(tspController controller){
+        t = controller;
+        tally = new Tally();
+        tspData = t.getTspData();
+        distance = t.getDistanceDouble();
+        int[] compare;
+
+        int randInt;
+        int randI;
+
+        // Set initial temperature
+        double temperature = 500000;
+
+        // Cooling rate
+//        double coolingRate = 0.003;
+
+        //initial population
+//        doStuff();
+
+
+
+        while (temperature > 0) {
+            tracker++;
+//            System.out.println("test");
+
+
+            //random number between 0 - 5
+            randInt = new Random().nextInt(14);
+            randI = new Random().nextInt(14);
+            compare = swap(randI, randInt);
+
+
+            //current solution distance
+            double cTL = findStuff(permList);
+
+
+            //new solution distance
+            double compareTL = findStuff(compare);
+
+
+            //if the new solution is better, keep it
+            //if probability(...) returns 1, it is a better solution than the current one
+            if(probability(cTL, compareTL, temperature)> Math.random()){
+//                count++;
+                permList=compare.clone();
+//                makeStats(compareTL);
+            }
+
+
+            //decrease temperature
+//            temperature *= 1-coolingRate;
+            temperature --;
+
+        }
+        System.out.println("Tracker: "+tracker);
+
+
+
+        standardDeviation=Math.sqrt(variance/count);
+
+        System.out.println("==================== Simulated Annealing TSP ====================");
+        System.out.println("Minimum Distance: " + min);
+        System.out.println("Minimum Permutation: ");
+        toStr(minPermList);
+        System.out.println("Maximum Distance: " + max);
+        System.out.println("Maximum Permutation: ");
+        toStr(maxPermList);
+        System.out.println("Mean: "+ sum/count);
+        System.out.println("Count: "+count);
+        System.out.println("Standard Deviation: " + standardDeviation);
+        System.out.println();
+
+
+        tally.getTally();
+
+
+    }
+
+
+    /**
+     * generate new permutations by swaping random indices of trip stops
+     *
+     */
+    public void doStuff(){
+        int randInt;
+        int randI;
+
+
+
+        for (int i = 0; i < 50; i++) {
+            count++;
+            //random number between 0 - 5
+            randInt = new Random().nextInt(14);
+            randI = new Random().nextInt(14);
+            permList = swap(randI, randInt);
+            double l = findStuff(permList);
+            makeStats(l);
+
+
+
+        }
+    }
+
+
+
+    /**
+     * Find trip length for the given permutation
+     * @param list : int[] : permutation of cities
+     * @return trip length : double
+     */
+    public double findStuff(int[] list){
+//        count++;
+        double tripLength = 0;
+        for (int j = 0; j < 14; j++) {
+
+            if(j == 13){
+
+                tripLength+=tspData.get(list[13]).getDistance(tspData.get(list[0]));
+
+            }
+            else {
+
+
+                tripLength += tspData.get(list[j]).getDistance(tspData.get(list[j+1]));
+
+            }
+
+        }
+                makeStats(tripLength);
+
+        return tripLength;
+
+
+    }
+
+    /**
+     * record stats for the permutation
+     * @param tripLength : double
+     */
+    private void makeStats(double tripLength) {
+        count++;
+        tally.countTally(tripLength);
+        //triplength has been obtained
+        if(this.max < tripLength){
+            this.max = tripLength;
+            maxPermList = permList;
+        }
+        if(this.min > tripLength){
+            this.min = tripLength;
+            minPermList = permList.clone();
+        }
+        if(tripLength < mean/2+1){
+            journeyList.add(permList.clone());
+        }
+        this.sum+= tripLength;
+        this.mean = sum/this.count;
+        variance += Math.pow(tripLength-mean,2);
+    }
+
+
+    /**
+     * Swaps the current permutation list stops at index i  and index r
+     * @param i indexed stop to switch with r
+     * @param r indexed stop to switch with i
+     */
+    public int[] swap(int i, int r){
+        int[] out = permList.clone();
+        int temp = out[i];
+        out[i] = out[r];
+        out[r] = temp;
+        return out;
+    }
+
+
+    /**
+     * Makes a pretty permutation printer (size 14)
+     * @param l
+     */
+    public void toStr(int[] l){
+        System.out.println(l[0] + " "+ l[1] + " "+l[2] +" "+ l[3] +" "+ l[4] +" "+ l[5]+" "+ l[6] + " "+l[7] + " "+
+                l[8] +" "+ l[9] +" "+
+                + l[10] +" "+ l[11] +" "+ l[12] +" "+ l[13]);
+    }
+
+
+
+    public double costChange(int[] current, int[] changed){
+        double currentTL= findStuff(current);
+        double changedTL = findStuff(changed);
+        return currentTL - changedTL;
+    }
+
+
+    /**
+     * Determine whether the perturbed permutation is worth keeping
+     * @param currentTL current trip length : double
+     * @param newTL perturbed trip length : double
+     * @param temperature given temp : double
+     * @return probability given formula in slide deck : double
+     */
+    public double probability(double currentTL, double newTL, double temperature) {
+
+        // If the new solution is better, accept it
+        if (newTL < currentTL) {
+            return 1.0;
+        }
+
+        //Gaussian Probability distribution (slide 9)
+        double e = 2.71828;
+        double t1 = Math.exp((-1*Math.pow(newTL,2))/(2*Math.pow(temperature,2)));
+        double t2 = 1/(temperature*Math.sqrt(2*Math.PI));
+        double out = Math.pow(t2, t1);
+
+        //other model slide 12
+
+
+        return out;
+    }
+
+}
