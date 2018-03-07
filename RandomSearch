@@ -1,0 +1,135 @@
+package P2;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+/**
+ * Created by kelseyedge on 2/12/18.
+ */
+public class RandomSearch{
+    double mean;
+    double standardDeviation;
+    double max= 0;
+    double min= 14;
+    double sum = 0;
+    int count = 0;
+    double variance;
+    tspController t;
+    ArrayList<TSP> tspData;
+    double[][] distance;
+    int[]permList = {0,1,2,3,4,5,6,7,8,9,10,11,12,13};
+    int[]minPermList;
+    int[]maxPermList;
+    Tally tally;
+
+    public RandomSearch(tspController controller){
+        tally = new Tally();
+        t = controller;
+        tspData = t.getTspData();
+        distance = t.getDistanceDouble();
+        findStuff();
+        doStuff();
+        tally.getTally();
+
+    }
+
+    /**
+     * Swaps the current permutation list stops at index i  and index r
+     * @param i indexed stop to switch with r
+     * @param r indexed stop to switch with i
+     */
+    public void swap(int i, int r){
+        int temp = permList[i];
+        permList[i] = permList[r];
+        permList[r] = temp;
+    }
+
+    /**
+     * generate new permutations by swaping random indices of trip stops
+     *
+     */
+    public void doStuff(){
+        int randInt;
+        int randI;
+
+
+        for (int i = 0; i < 999999; i++) {
+
+            //random number between 0 - 5
+            randInt = new Random().nextInt(14);
+            randI = new Random().nextInt(14);
+            swap(randI, randInt);
+            findStuff();
+
+
+
+        }
+        standardDeviation=Math.sqrt(variance/count);
+
+        System.out.println("==================== Random TSP ====================");
+        System.out.println("Minimum Distance: " + min);
+        System.out.println("Minimum Permutation: ");
+        toStr(minPermList);
+        System.out.println("Maximum Distance: " + max);
+        System.out.println("Maximum Permutation: ");
+        toStr(maxPermList);
+        System.out.println("Mean: "+ sum/count);
+        System.out.println("Count: "+count);
+        System.out.println("Standard Deviation: " + standardDeviation);
+        System.out.println();
+
+
+    }
+
+    /**
+     * Calculates the trip length for the current permutation list (this.permList),
+     * mean, max, min, variance, and sum
+     */
+    public void findStuff(){
+        count++;
+        double tripLength = 0;
+        for (int j = 0; j < 14; j++) {
+
+            if(j == 13){
+
+                tripLength+=tspData.get(permList[13]).getDistance(tspData.get(permList[0]));
+
+            }
+            else {
+
+
+                tripLength += tspData.get(permList[j]).getDistance(tspData.get(permList[j+1]));
+
+            }
+
+        }
+
+
+
+        tally.countTally(tripLength);
+        //triplength has been obtained
+        if(this.max < tripLength){
+            this.max = tripLength;
+            maxPermList = permList.clone();
+        }
+        if(this.min > tripLength){
+            this.min = tripLength;
+            minPermList = permList.clone();
+        }
+        this.sum+= tripLength;
+        this.mean = sum/this.count;
+        variance += Math.pow(tripLength-mean,2);
+    }
+
+
+    /**
+     * Makes a pretty output for 14 permutation list
+     * @param l
+     */
+    public void toStr(int[] l){
+        System.out.println(l[0] + " "+ l[1] + " "+l[2] +" "+ l[3] +" "+ l[4] +" "+ l[5]+" "+ l[6] + " "+l[7] + " "+
+                l[8] +" "+ l[9] +" "+
+                + l[10] +" "+ l[11] +" "+ l[12] +" "+ l[13]);
+    }
+
+}
