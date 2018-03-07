@@ -1,0 +1,42 @@
+package P2;
+
+/**
+ * Created by kelseyedge on 3/7/18.
+ */
+public class Tally {
+    static double min = 4.25717697174779;
+    static double max = 11.5;
+    static double dx = (max-min)/100;
+    static int[] binList= new int[100];
+
+    public Tally(){
+        for (int i = 0; i < binList.length; i++) {
+            binList[i]=0;
+        }
+
+    }
+
+    public void countTally(double tripLength) {
+        double upperBound = min + dx;
+        double lowerBound = min;
+        int temp;
+        int count = 0;
+        for (double i = min; i <= tripLength; i+=dx) {
+            if (lowerBound <= tripLength && upperBound>= tripLength){
+                temp = binList[count];
+                binList[count]= temp+1;
+            }
+            count++;
+            lowerBound+=dx;
+            upperBound+=dx;
+        }
+
+    }
+
+    public void getTally(){
+        for (int i = 0; i < binList.length; i++) {
+
+            System.out.println("bin " + i + ":\t" + binList[i]);
+        }
+    }
+}
