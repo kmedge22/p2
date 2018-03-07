@@ -1,0 +1,108 @@
+package P2;
+
+import P1.Matrix;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Scanner;
+
+/**
+ * Created by kelseyedge on 3/2/18.
+ */
+public class tspController {
+    ArrayList<TSP> tspData;
+    double[][] distanceDouble;
+
+    public tspController(){
+        tspData = readTSP("src/main/resources/dataTSP.txt");
+
+        //create distance matrix
+        int size = 14;
+
+        this.distanceDouble = new double[size][size];
+        for (int i = 0; i < size; i++) {
+
+            for (int j = 0; j < size; j++) {
+                distanceDouble[i][j]= tspData.get(i).getDistance(tspData.get(j));
+
+            }
+
+        }
+        Matrix distanceMatrix = new Matrix(distanceDouble);
+        distanceMatrix.toString();
+
+    }
+
+    public double[][] getDistanceDouble(){return this.distanceDouble;}
+
+
+    public ArrayList<TSP> getTspData(){return tspData;}
+
+
+    private static ArrayList<TSP> readTSP(String filename) {
+        ArrayList tspData = new ArrayList();
+        ArrayList lines = readData(filename);
+        int e = 0;
+        double sum1x = 0.0D;
+        double sum1y = 0.0D;
+
+        for(Iterator var12 = lines.iterator(); var12.hasNext(); ++e) {
+//            ArrayList<TSP> tspData= new ArrayList<>();
+            String ln = (String)var12.next();
+            String[] x = ln.split("\\s+");
+            int m = 0;
+            double[][] temp = new double[2][1];
+            double[][] dataTemp = new double[2][1];
+            String[] var18 = x;
+            int var19 = x.length;
+
+            for(int var20 = 0; var20 < var19; ++var20) {
+                String element = var18[var20];
+                String token = element.trim();
+//                System.out.println("Element: " + element);
+//                System.out.println("Token: " + token);
+                double value;
+                if(m == 0) {
+                    value = Double.valueOf(token).doubleValue();
+                    dataTemp[0][0] = value;
+                    sum1x += value;
+                } else if(m == 1) {
+                    value = Double.valueOf(token).doubleValue();
+                    dataTemp[1][0] = value;
+                    sum1y += value;
+
+                    tspData.add(new TSP(dataTemp[0][0], dataTemp[1][0], token));
+                }
+
+                ++m;
+            }
+        }
+
+
+
+        return tspData;
+    }
+
+
+    private static ArrayList<String> readData(String filename) {
+        ArrayList lines = new ArrayList();
+        Scanner s = null;
+        File infile = new File(filename);
+
+        try {
+            s = new Scanner(infile);
+        } catch (FileNotFoundException var5) {
+            var5.printStackTrace();
+        }
+
+        while(s != null && s.hasNext()) {
+            lines.add(s.nextLine());
+        }
+
+        return lines;
+    }
+
+
+}
