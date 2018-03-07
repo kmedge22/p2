@@ -1,0 +1,214 @@
+package P2;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+/**
+ * Created by kelseyedge on 2/12/18.
+ */
+public class GeneticAlgorithm {
+    double mean;
+    double standardDeviation;
+    double max= 0;
+    double min= 14;
+    double sum = 0;
+    int count = 0;
+    double variance;
+    tspController t;
+    ArrayList<TSP> tspData;
+    double[][] distance;
+    int[]permList = {0,1,2,3,4,5,6,7,8,9,10,11,12,13};
+    int[]minPermList;
+    int[]maxPermList;
+    Tally tally;
+    ArrayList<int[]> journeyList = new ArrayList();
+
+
+    public GeneticAlgorithm(tspController controller){
+        t = controller;
+        tally = new Tally();
+        tspData = t.getTspData();
+        distance = t.getDistanceDouble();
+
+        int randInt;
+        int randI;
+
+        //initial population
+        for (int i = 0; i < 50; i++) {
+
+            //random number between 0 - 5
+            randInt = new Random().nextInt(14);
+            randI = new Random().nextInt(14);
+            swap(randI, randInt);
+            findStuff();
+        }
+
+
+        //add to "fit population"
+        journeyList.add(minPermList);
+
+        //create new permutation with two fit parents
+        mutate();
+
+        doStuff(10);
+
+        for (int i = 0; i < 100000; i++) {
+
+            mutate();
+            doStuff(10);
+
+        }
+
+
+
+
+        standardDeviation=Math.sqrt(variance/count);
+
+        System.out.println("==================== Genetic TSP ====================");
+        System.out.println("Minimum Distance: " + min);
+        System.out.println("Minimum Permutation: ");
+        toStr(minPermList);
+        System.out.println("Maximum Distance: " + max);
+        System.out.println("Maximum Permutation: ");
+        toStr(maxPermList);
+        System.out.println("Mean: "+ sum/count);
+        System.out.println("Count: "+count);
+        System.out.println("Standard Deviation: " + standardDeviation);
+        System.out.println();
+
+        tally.getTally();
+
+    }
+
+    /**
+     * generate new permutations by swaping semi-random indices of trip stops
+     * @param journeys: how many new permutations to makes from current permList
+     */
+    private void doStuff(int journeys) {
+        int randInt;
+        int randI;
+
+        for (int i = 0; i < journeys; i++) {
+
+            //random number between 0 - 13
+            randInt = new Random().nextInt(14);
+            randI = new Random().nextInt(14);
+            swap(randI, randInt);
+            findStuff();
+        }
+
+    }
+
+    /**
+     * Artificially mutates and generates offspring from the current minimum
+     * permutation as parent one and a random fit parent from the list of
+     * fit parents for parent 2. Offspring retains the first seven stops from parent one
+     * and the second seven stops from parent two.
+     */
+    public void mutate(){
+        //how many trip-stops to keep from first parent
+        int keepers = 7;
+        int temp;
+        int i;
+
+        //grab a fit parent from the list of fit parents
+        int[] random = journeyList.get(new Random().nextInt(journeyList.size()));
+
+        //list to determine what has been used to avoid duplicate stops in offspring
+        int[] starterList = {0,1,2,3,4,5,6,7,8,9,10,11,12,13};
+
+        for (i = 0; i < keepers; i++) {
+
+            //make offspring keep the designated (keepers) number of stops from the current minPermList
+            permList[i] = minPermList[i];
+            temp = minPermList[i];
+
+            //when trip stop has been used, replace with 99
+            starterList[temp]= 99;
+
+        }
+
+        for (int k = 0; k < starterList.length; k++) {
+            //Fill the rest of the offspring stops with the random fit parent's stops, in order
+            temp = random[k];
+
+                //Only use stops that have not already been used
+                if(starterList[temp] != 99){
+                    permList[i]=temp;
+                    i++;
+
+                }
+            }
+        }
+
+
+    /**
+     * Calculates the trip length for the current permutation list (this.permList),
+     * mean, max, min, variance, sum, and determines whether to add the current permutation to the
+     * list of fit parents.
+     */
+    public void findStuff(){
+        count++;
+        double tripLength = 0;
+        for (int j = 0; j < 14; j++) {
+
+            if(j == 13){
+
+                tripLength+=tspData.get(permList[13]).getDistance(tspData.get(permList[0]));
+
+            }
+            else {
+
+
+                tripLength += tspData.get(permList[j]).getDistance(tspData.get(permList[j+1]));
+
+            }
+
+        }
+        tally.countTally(tripLength);
+
+
+        //triplength has been obtained
+        if(this.max < tripLength){
+            this.max = tripLength;
+            maxPermList = permList;
+        }
+
+        if(this.min > tripLength){
+            this.min = tripLength;
+            minPermList = permList.clone();
+        }
+
+        //Determines if the current permutation should be added to the list of fit parents
+        if(tripLength < mean/2+1){
+            journeyList.add(permList.clone());
+        }
+
+        this.sum+= tripLength;
+        this.mean = sum/this.count;
+        variance += Math.pow(tripLength-mean,2);
+    }
+
+
+    /**
+     * Swaps the current permutation list stops at index i  and index r
+     * @param i indexed stop to switch with r
+     * @param r indexed stop to switch with i
+     */
+    public void swap(int i, int r){
+        int temp = permList[i];
+        permList[i] = permList[r];
+        permList[r] = temp;
+    }
+
+    /**
+     * Makes a pretty print statement
+     * @param l : int[] list : size 14
+     */
+    public void toStr(int[] l){
+        System.out.println(l[0] + " "+ l[1] + " "+l[2] +" "+ l[3] +" "+ l[4] +" "+ l[5]+" "+ l[6] + " "+l[7] + " "+
+                l[8] +" "+ l[9] +" "+
+                + l[10] +" "+ l[11] +" "+ l[12] +" "+ l[13]);
+    }
+
+}
